@@ -29,8 +29,9 @@ build:
   dependencies:
     zlib.net: ^1
     gnu.org/binutils: '*'
+    gnu.org/make: '*'
     linux:
-      gnu.org/make: '*'
+      llvm.org: <16
   script:
     - ./configure $CONFIGURE_ARGS
     - make --jobs {{ hw.concurrency }} all
@@ -45,13 +46,14 @@ build:
       working-directory: '{{prefix}}/share/openmpi'
     - install {{prefix}}/lib/*.mod {{prefix}}/include/
   env:
-    AR: ${{deps.gnu.org/binutils.prefix}}/bin/ar
-    RANLIB: ${{deps.gnu.org/binutils.prefix}}/bin/ranlib
+    CC: clang
+    CXX: clang++
+    LD: clang
+    AR: llvm-ar
+    AS: llvm-as
+    RANLIB: llvm-ranlib
     CXXFLAGS: $CXXFLAGS -std=c++11
-    darwin:
-      CFLAGS: $CFLAGS -Wl,-rpath,{{pkgx.prefix}}
-      CXXFLAGS: $CXXFLAGS -Wl,-rpath,{{pkgx.prefix}}
-      FCFLAGS: $FCFLAGS -Wl,-rpath,{{pkgx.prefix}}
+    FCFLAGS: $FCFLAGS -Wl,-rpath,{{pkgx.prefix}}
     CONFIGURE_ARGS:
       - --disable-debug
       - --disable-dependency-tracking
