@@ -8,7 +8,7 @@ versions:
 dependencies:
   open-mpi.org/hwloc: '*'
   libevent.org: '*'
-  gnu.org/gcc: '*' # for gfortran
+  gnu.org/gcc: <13 # for gfortran
   gnu.org/inetutils: '*' # for rsh
 
 runtime:
@@ -30,8 +30,6 @@ build:
     zlib.net: ^1
     gnu.org/binutils: '*'
     gnu.org/make: '*'
-    linux:
-      llvm.org: <16
   script:
     - ./configure $CONFIGURE_ARGS
     - make --jobs {{ hw.concurrency }} all
@@ -46,12 +44,11 @@ build:
       working-directory: '{{prefix}}/share/openmpi'
     - install {{prefix}}/lib/*.mod {{prefix}}/include/
   env:
-    CC: clang
-    CXX: clang++
-    LD: clang
-    AR: llvm-ar
-    AS: llvm-as
-    RANLIB: llvm-ranlib
+    CC: gcc
+    CXX: g++
+    LD: gcc
+    AR: ${{deps.gnu.org/binutils.prefix}}/bin/ar
+    RANLIB: ${{deps.gnu.org/binutils.prefix}}/bin/ranlib
     CXXFLAGS: $CXXFLAGS -std=c++11
     FCFLAGS: $FCFLAGS -Wl,-rpath,{{pkgx.prefix}}
     CONFIGURE_ARGS:
