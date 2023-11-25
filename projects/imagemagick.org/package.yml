@@ -27,34 +27,31 @@ provides:
   - bin/stream
 
 dependencies:
-    libpng.org: '*'
-    ijg.org: '*'
-    freetype.org: '*'
-    libjpeg-turbo.org: '*'
-    liblqr.wikidot.com: '*'
-    simplesystems.org/libtiff: '*'
-    gnu.org/libtool: '*'
-    littlecms.com: '*'
-    openexr.com: '*'
-    openjpeg.org: '*'
-    google.com/webp: '*'
-    tukaani.org/xz: '*'
-    sourceware.org/bzip2: '*'
-    gnome.org/libxml2: '*'
-    zlib.net: '*'
-    jpeg.org/jpegxl: '*'
-    perl.org: '*'
-    libzip.org: '*'
-    darwin:
-      openmp.llvm.org: '*'
-      github.com/strukturag/libheif: '*'
-    linux/x86-64:
-      github.com/strukturag/libheif: '*'
-    linux:
-      x.org/x11: '*'
-
-runtime:
-  MAGICK_HOME: "{{prefix}}"
+  libpng.org: '*'
+  ijg.org: '*'
+  freetype.org: '*'
+  libjpeg-turbo.org: '*'
+  liblqr.wikidot.com: '*'
+  simplesystems.org/libtiff: '*'
+  gnu.org/libtool: '*'
+  littlecms.com: '*'
+  openexr.com: '*'
+  openjpeg.org: '*'
+  google.com/webp: '*'
+  tukaani.org/xz: '*'
+  sourceware.org/bzip2: '*'
+  gnome.org/libxml2: '*'
+  zlib.net: '*'
+  jpeg.org/jpegxl: '*'
+  perl.org: '*'
+  libzip.org: '*'
+  darwin:
+    openmp.llvm.org: '*'
+    github.com/strukturag/libheif: '*'
+  linux/x86-64:
+    github.com/strukturag/libheif: '*'
+  linux:
+    x.org/x11: '*'
 
 build:
   dependencies:
@@ -64,14 +61,15 @@ build:
     - find . -type f -name '*-config.in' -exec sed -i'' -e 's|@PKG_CONFIG@|pkg-config|g' {} +
     - ./configure $ARGS
     - make --jobs {{ hw.concurrency }} install
-    - run: sed -i'' -e 's|^prefix=.*|prefix=${MAGICK_HOME}|g' Magick++-config MagickCore-config MagickWand-config
+    - run: sed -i'' -e 's|{{prefix}}|prefix=$(cd $(dirname $0)/.. \&\& pwd)|g'
+        Magick++-config MagickCore-config MagickWand-config
       working-directory: ${{prefix}}/bin
 
     - run: |
         mv ImageMagick-{{version.major}}/* .
         rmdir ImageMagick-{{version.major}}
         ln -s . ImageMagick-{{version.major}}
-      working-directory: ${{prefix}}/include
+        working-directory: ${{prefix}}/include
 
   env:
     # https://github.com/ImageMagick/ImageMagick/issues/1549
@@ -80,6 +78,7 @@ build:
       - -L{{deps.liblqr.wikidot.com.prefix}}/lib
       - -L{{deps.sourceware.org/bzip2.prefix}}/lib
       - -L{{deps.ijg.org.prefix}}/lib
+      - -L{{deps.libpng.org.prefix}}/lib
     ARGS:
       - --prefix={{ prefix }}
       - --libdir={{prefix}}/lib
@@ -87,7 +86,7 @@ build:
       - --disable-silent-rules
       - --disable-opencl
       - --enable-static
-      - --enable-shared  # https://github.com/pkgxdev/pantry/issues/4030
+      - --enable-shared # https://github.com/pkgxdev/pantry/issues/4030
       - --with-png=yes
       - --with-tiff=yes
       - --with-jxl=yes
@@ -119,14 +118,13 @@ build:
         - --without-x
 
 test:
-  env:
-    MAGICK_HOME: "{{prefix}}"
   dependencies:
     curl.se: '*'
   script:
     #FIXME: they use a weird versioning scheme
     - magick -version | grep 7.1.1-12
     - curl "https://upload.wikimedia.org/wikipedia/commons/6/6a/PNG_Test.png" -o a.png
+    - magick identify a.png
     - magick identify a.png | grep "a.png PNG"
 
     # verify that we can build the rmagick gem
