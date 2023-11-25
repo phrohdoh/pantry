@@ -69,7 +69,7 @@ build:
         mv ImageMagick-{{version.major}}/* .
         rmdir ImageMagick-{{version.major}}
         ln -s . ImageMagick-{{version.major}}
-        working-directory: ${{prefix}}/include
+      working-directory: ${{prefix}}/include
 
   env:
     # https://github.com/ImageMagick/ImageMagick/issues/1549
